@@ -95,6 +95,11 @@
 - Vercel 儀表板若仍有舊設定（例如仍記錄 pnpm）需再次確認 override 狀態。  
 - 未來若要支援多框架，需更新 `CONSTITUTION.md` 中的流程段落。
 
+## 6. Lesson Learned（固定區塊）
+
+- **LL-2025-11-24-01**：Vercel 儀表板即使清空欄位，若未關閉 override 或未直接填入指令，仍會 fallback 至 pnpm。作法：在儀表板明確輸入 `npm ci` / `npm run build`，並於 `vercel.json` 中同步記錄。
+- 未來任何事件請在此區塊追加 `LL-YYYY-MM-DD-XX` 條目，保持時間序與描述（緣由、處理、預防措施）。
+
 ---
 
 此 `specify.md` 將作為後續 OpenSpec 工作流程的起點，未來新功能請新增或延伸本文件，並維持與 `CONSTITUTION.md` 所述原則一致。
