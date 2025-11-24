@@ -2,6 +2,17 @@
 
 本規格遵循 OpenSpec 的需求/場景格式，描述本次變更需要達成的行為。
 
+## 0. 架構 / 部署對應
+
+| 模組 / 來源資料夾 | 功能 | Deploy Service | 平台 | 追蹤分支 |
+| --- | --- | --- | --- | --- |
+| `apps/liff-editor` | Next.js 16 LIFF 編輯器（前台） | `tucheng-cat-autopost-liff-editor` | Vercel | `main` |
+| `apps/backend` | NestJS API / Webhook 服務（提供資料存取、自動貼文） | `tucheng-cat-autopost-backend`（命名依 Render 控制台為準） | Render Web Service | `main` |
+
+- Render 僅部署後端；前端維持在 Vercel。  
+- 所有服務皆以 `main` 分支建置；若未來需要 staging，請在表格中新增分支對應。  
+- 任何服務若增加（例如 cron、message relay），都需在本表補上 Deploy target 與功能說明。
+
 ## Requirement: npm 為唯一套件管理工具
 
 系統需要移除 pnpm 依賴，確保 Vercel 及本地建置皆使用 npm。
@@ -31,6 +42,27 @@
 - **GIVEN** 專案根目錄有 `specify.md`
 - **WHEN** 未來新增需求
 - **THEN** 可在此文件延伸 Requirement/Scenario，作為開發與審查依據
+
+## Requirement: Render 環境需帶入 Vercel 變數
+
+Render 服務若要模擬 Vercel 行為（例如部分函式依賴 `process.env.VERCEL_*`），必須在對應的 Render Service 上設定下列環境變數。
+
+### Scenario: `tucheng-cat-autopost-backend` 服務帶有 Vercel 變數
+- **GIVEN** Render 控制台中，`tucheng-cat-autopost-backend`（NestJS API）已進入「Environment → Environment Variables」
+- **WHEN** 建立以下鍵值  
+  | Key | 說明 | 建議值 |
+  | --- | --- | --- |
+  | `VERCEL` | 是否為 Vercel 環境 | `1` |
+  | `VERCEL_ENV` | `production` / `preview` / `development`，Render Production 服務請設 `production` | 依服務性質 |
+  | `VERCEL_REGION` | 近似 Vercel 區域；可使用 `iad1`（US-East）或接近 Render Region 的值 | 依部署地 |
+  | `VERCEL_URL` | 服務對外網址（不含 `https://`） | 例如 `tucheng-cat-autopost-backend.onrender.com` |
+  | `VERCEL_GIT_COMMIT_SHA` | Render build 時的 commit SHA | 使用 Render 內建環境變數 `SOURCE_VERSION` 或手動填寫 |
+  | `VERCEL_GIT_COMMIT_REF` | 分支名稱 | `main` |
+  | `VERCEL_GIT_COMMIT_MESSAGE` | 最新 commit 訊息 | 可由 CI 腳本注入或手動維護 |
+  | `VERCEL_GIT_PROVIDER` | 原始 Git 供應商 | `github` |
+  | `VERCEL_PROJECT_PRODUCTION_URL` | 正式前端網域（供 API 產生絕對網址） | `tucheng-cat-autopost-liff-editor.vercel.app` |
+- **THEN** NestJS 服務若呼叫任何依賴 `VERCEL_*` 變數的邏輯，可在 Render 上取得正確值
+- **AND** 文件需註明，若其他 Render 服務（例如未來的 worker）也需要這些變數，須複製相同設定
 
 ---
 
