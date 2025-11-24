@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd ../.. && pnpm install && cd apps/liff-editor && pnpm build",
+  "outputDirectory": ".next",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/editor/:path*",
+      "destination": "/editor/:path*"
+    }
+  ]
+}
+
