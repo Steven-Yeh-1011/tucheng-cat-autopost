@@ -32,8 +32,30 @@
 - **Framework Preset**: 選擇「**Next.js**」（Vercel 會自動偵測）
 - **Root Directory**: 設定為 `apps/liff-editor`
   - 點擊「**Edit**」按鈕
-  - 輸入：`apps/liff-editor`
+  - 在彈出的目錄選擇器中：
+    - 如果看到 `apps` 目錄，點擊展開
+    - 選擇 `apps/liff-editor`
+    - 如果沒有看到 `liff-editor`，請先確認 GitHub 倉庫已更新（見下方「問題排除」）
+  - 點擊「**Continue**」
 - **Project Name**: `tucheng-cat-liff-editor`（或您喜歡的名稱）
+
+#### 2.2 如果看不到 liff-editor 選項
+
+**可能原因和解決方法**：
+
+1. **GitHub 倉庫未更新**：
+   - 確認本地檔案已推送到 GitHub
+   - 在 Vercel 中點擊「**Refresh**」或重新匯入倉庫
+
+2. **手動輸入路徑**：
+   - 在 Root Directory 彈窗中，如果沒有看到 `liff-editor`
+   - 可以嘗試手動輸入：`apps/liff-editor`
+   - 或先選擇 `apps`，然後在下一步中指定
+
+3. **檢查 GitHub 倉庫**：
+   - 前往：https://github.com/Steven-Yeh-1011/tucheng-cat-autopost/tree/main/apps
+   - 確認 `liff-editor` 目錄存在
+   - 如果不存在，需要先推送檔案到 GitHub
 
 #### 2.2 Build and Output Settings
 
