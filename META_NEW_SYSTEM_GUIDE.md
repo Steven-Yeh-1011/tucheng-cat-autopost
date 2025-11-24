@@ -17,7 +17,12 @@ Meta 已推出新的應用程式建立系統，提供更簡化的流程和更好
 
 1. 前往：https://developers.facebook.com/
 2. 使用您的 Facebook 帳號登入
-3. 點擊右上角「My Apps」或「應用程式」→「Create App」或「建立應用程式」
+3. 找到「應用程式」選單：
+   - 在頁面頂部導航列中，點擊「**應用程式**」（Apps）
+   - 或直接前往：https://developers.facebook.com/apps/
+4. 點擊「建立應用程式」或「Create App」按鈕
+   - 位置：應用程式列表頁面的右上角，或空狀態頁面的中央
+   - 或直接前往：https://developers.facebook.com/apps/creation/
 
 ### 1.2 處理新系統彈窗
 
