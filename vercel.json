@@ -3,6 +3,7 @@
   "outputDirectory": ".next",
   "installCommand": "npm ci",
   "framework": "nextjs",
+  "rootDirectory": "apps/liff-editor",
   "nodeVersion": "20.x"
 }
 
