@@ -19,14 +19,38 @@
 2. 使用您的 Facebook 帳號登入
 3. 如果還沒有開發者帳號，點擊「Get Started」完成註冊
 
-### 1.2 建立新 App
+### 1.2 建立新 App（新版系統）
+
+Meta 已推出新的應用程式建立系統，提供更簡化的流程：
+
+#### 方法一：使用新版系統（推薦）
+
+1. 點擊右上角「My Apps」→「Create App」
+2. 如果看到「你可以透過新方式使用 Meta 建立應用程式」的彈窗：
+   - 閱讀說明（新系統提供可自訂的使用案例、新主控板，以及更簡化的權限設定）
+   - 點擊「建立應用程式」繼續
+3. 填寫應用程式詳細資料：
+   - **應用程式名稱**: `土城貓舍自動發文系統`（或您喜歡的名稱）
+   - **應用程式聯絡電子郵件地址**: 您的 Email（例如：`s0919708515@yahoo.com`）
+   - 點擊「繼續」
+4. 選擇使用案例：
+   - 新系統會引導您選擇適合的使用案例
+   - 選擇「Business」或「Social Media Management」相關選項
+   - 或選擇「Other」然後自訂
+5. 完成建立：
+   - 系統會自動設定必要的權限和產品
+   - 您將進入新的主控板
+
+#### 方法二：使用傳統方式
+
+如果沒有看到新系統選項，使用傳統方式：
 
 1. 點擊右上角「My Apps」→「Create App」
 2. 選擇應用類型：
    - 選擇「Business」或「Other」
    - 點擊「Next」
 3. 填寫 App 資訊：
-   - **App Name**: `土城貓舍自動發文系統`（或您喜歡的名稱）
+   - **App Name**: `土城貓舍自動發文系統`
    - **App Contact Email**: 您的 Email
    - **Business Account**: 選擇或建立（可選）
    - 點擊「Create App」
@@ -35,26 +59,33 @@
 
 ## 步驟 2: 新增產品（Products）
 
-### 2.1 新增 Facebook Login（用於取得 Token）
+### 2.1 新版系統 vs 傳統系統
 
-1. 在 App Dashboard 中，找到「Add Products to Your App」
-2. 找到「Facebook Login」，點擊「Set Up」
+#### 新版系統（如果使用新系統建立）
+
+新系統會根據您選擇的使用案例自動建議和設定產品，但您仍可能需要手動新增：
+
+1. 在新主控板中，找到「Products」或「產品」區塊
+2. 系統可能已自動新增相關產品
+3. 如果需要手動新增，點擊「Add Product」或「新增產品」
+
+#### 傳統系統（如果使用傳統方式建立）
+
+### 2.2 新增 Facebook Login（用於取得 Token）
+
+1. 在 App Dashboard 中，找到「Add Products to Your App」或「新增產品」
+2. 找到「Facebook Login」，點擊「Set Up」或「設定」
 3. 選擇「Web」平台
 4. 設定：
-   - **Site URL**: `https://your-backend.onrender.com`（您的 Render Web Service URL）
-   - 點擊「Save」
-
-### 2.2 新增 Instagram Basic Display（如果使用 Instagram）
-
-1. 在「Add Products」中找到「Instagram Basic Display」
-2. 點擊「Set Up」
-3. 按照指示完成設定
+   - **Site URL**: `https://tucheng-cat-autopost.onrender.com`（您的 Render Web Service URL）
+   - 點擊「Save」或「儲存」
 
 ### 2.3 新增 Instagram Graph API（推薦，用於發佈到 Instagram）
 
-1. 在「Add Products」中找到「Instagram Graph API」
-2. 點擊「Set Up」
+1. 在「Add Products」或「新增產品」中找到「Instagram Graph API」
+2. 點擊「Set Up」或「設定」
 3. 按照指示完成設定
+4. 確保已連結 Instagram 商業帳號到 Facebook 粉絲專頁
 
 ---
 
