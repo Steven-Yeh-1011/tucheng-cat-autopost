@@ -1,0 +1,28 @@
+{
+  "name": "tucheng-cat-autopost",
+  "version": "1.0.0",
+  "private": true,
+  "description": "土城貓舍自動發文系統",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter liff-editor dev",
+    "dev": "pnpm --parallel --filter backend --filter liff-editor dev",
+    "build": "pnpm --recursive build",
+    "lint": "pnpm --recursive lint",
+    "prisma:generate": "pnpm --filter backend prisma:generate",
+    "prisma:migrate": "pnpm --filter backend prisma:migrate",
+    "prisma:studio": "pnpm --filter backend prisma:studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
+

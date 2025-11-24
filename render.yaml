@@ -1,0 +1,75 @@
+services:
+  # Web Service: 主要 NestJS 應用程式
+  - type: web
+    name: tucheng-cat-backend
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: cd apps/backend && pnpm install && pnpm prisma:generate && pnpm build
+    startCommand: cd apps/backend && pnpm start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: BACKEND_PORT
+        value: 10000
+      - key: FRONTEND_URL
+        sync: false
+      - key: LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
+      - key: LINE_CHANNEL_SECRET
+        sync: false
+      - key: LINE_USER_ID
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: META_PAGE_ID
+        sync: false
+      - key: META_IG_ACCOUNT_ID
+        sync: false
+      - key: IMAGE_STORAGE_PATH
+        value: /opt/render/project/src/storage/images
+
+  # Cron Job: 每日生成草稿
+  - type: cron
+    name: generate-daily-draft
+    schedule: "0 9 * * *"  # 每天 UTC 9:00 (台灣時間 17:00)
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: cd apps/backend && pnpm install && pnpm prisma:generate
+    startCommand: cd apps/backend && node -e "const https = require('https'); const url = process.env.WEB_SERVICE_URL + '/api/tasks/generate-daily-draft'; https.get(url, (res) => { let data = ''; res.on('data', (chunk) => { data += chunk; }); res.on('end', () => { console.log('Response:', data); process.exit(res.statusCode === 200 ? 0 : 1); }); }).on('error', (err) => { console.error('Error:', err); process.exit(1); });"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: WEB_SERVICE_URL
+        fromService:
+          type: web
+          name: tucheng-cat-backend
+          property: host
+
+  # Cron Job: 清理圖片庫 (每週執行)
+  - type: cron
+    name: cleanup-images
+    schedule: "0 2 * * 0"  # 每週日 UTC 2:00 (台灣時間 10:00)
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: cd apps/backend && pnpm install && pnpm prisma:generate
+    startCommand: cd apps/backend && node -e "const https = require('https'); const url = process.env.WEB_SERVICE_URL + '/api/tasks/cleanup-images'; https.get(url, (res) => { let data = ''; res.on('data', (chunk) => { data += chunk; }); res.on('end', () => { console.log('Response:', data); process.exit(res.statusCode === 200 ? 0 : 1); }); }).on('error', (err) => { console.error('Error:', err); process.exit(1); });"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: WEB_SERVICE_URL
+        fromService:
+          type: web
+          name: tucheng-cat-backend
+          property: host
+
