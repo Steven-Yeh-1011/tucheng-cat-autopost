@@ -1,0 +1,90 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Platform {
+  META
+  LINE
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
+
+enum TaskStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model MetaCredential {
+  id           String      @id @default(uuid())
+  pageId       String      @unique
+  pageName     String?
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  posts PostDraft[]
+}
+
+model LineCredential {
+  id                String      @id @default(uuid())
+  channelId         String      @unique
+  channelSecret     String?
+  accessToken       String?
+  accessTokenExpiry DateTime?
+  metadata          Json?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  posts PostDraft[]
+}
+
+model PostDraft {
+  id               String        @id @default(uuid())
+  platform         Platform
+  title            String?
+  content          String
+  mediaUrls        String[]      @default([])
+  metadata         Json?
+  status           PostStatus    @default(DRAFT)
+  scheduledAt      DateTime?
+  publishedAt      DateTime?
+  metaCredentialId String?
+  lineCredentialId String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  metaCredential MetaCredential? @relation(fields: [metaCredentialId], references: [id])
+  lineCredential LineCredential? @relation(fields: [lineCredentialId], references: [id])
+
+  @@index([platform, status])
+  @@index([scheduledAt])
+}
+
+model TaskLog {
+  id          String     @id @default(uuid())
+  taskType    String
+  status      TaskStatus
+  message     String?
+  payload     Json?
+  createdAt   DateTime   @default(now())
+  completedAt DateTime?
+
+  @@index([taskType, createdAt])
+}
+
+
