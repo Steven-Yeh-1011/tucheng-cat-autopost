@@ -28,20 +28,39 @@ export class TasksService {
 
   async generateDailyDraft() {
     this.logger.log('Executing generate-daily-draft task');
-    const log = await this.taskLogRepository.createLog('generate-daily-draft', TaskStatus.RUNNING);
-
+    let log;
+    
     try {
+      log = await this.taskLogRepository.createLog('generate-daily-draft', TaskStatus.RUNNING);
+      this.logger.log(`Task log created: ${log.id}`);
+
+      this.logger.log('Creating draft...');
       const draft = await this.postsRepository.createDraft({
         platform: Platform.META,
         content: 'Auto-generated placeholder draft',
         status: PostStatus.DRAFT,
       });
 
-      await this.taskLogRepository.completeLog(log.id, TaskStatus.SUCCESS, 'Draft created');
+      this.logger.log(`Draft created successfully: ${draft.id}`);
+      await this.taskLogRepository.completeLog(log.id, TaskStatus.SUCCESS, `Draft created: ${draft.id}`);
 
-      return { task: 'generate-daily-draft', status: 'queued', draftId: draft.id };
+      return { task: 'generate-daily-draft', status: 'success', draftId: draft.id };
     } catch (error) {
-      await this.taskLogRepository.completeLog(log.id, TaskStatus.FAILED, (error as Error).message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      this.logger.error(`generate-daily-draft failed: ${errorMessage}`, errorStack);
+      
+      if (log) {
+        await this.taskLogRepository.completeLog(
+          log.id, 
+          TaskStatus.FAILED, 
+          `Error: ${errorMessage}${errorStack ? `\nStack: ${errorStack}` : ''}`
+        ).catch((logError) => {
+          this.logger.error(`Failed to update task log: ${logError}`);
+        });
+      }
+      
       throw error;
     }
   }
