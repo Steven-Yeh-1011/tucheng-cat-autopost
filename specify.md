@@ -132,6 +132,81 @@ Render 服務若要模擬 Vercel 行為（例如部分函式依賴 `process.env.
 - **LL-2025-11-24-01**：Vercel 儀表板即使清空欄位，若未關閉 override 或未直接填入指令，仍會 fallback 至 pnpm。作法：在儀表板明確輸入 `npm ci` / `npm run build`，並於 `vercel.json` 中同步記錄。
 - 未來任何事件請在此區塊追加 `LL-YYYY-MM-DD-XX` 條目，保持時間序與描述（緣由、處理、預防措施）。
 
+## 7. 進度紀錄（2025-11-24）
+
+### 已完成
+1. **後端模組化**：`MetaModule`（`GET /meta/callback`）、`LineModule`（`POST /line/webhook`）、`TasksModule`（`/tasks/cleanup-images`、`/tasks/generate-daily-draft`）皆串上 Prisma，確保授權/排程事件會被記錄。
+2. **Prisma 資料層**：`prisma/schema.prisma` 建立 `MetaCredential`、`LineCredential`、`PostDraft`、`TaskLog`，`PrismaModule` + Repository 已供 Nest 容器注入；`PostsController` 開放日後給前端使用的草稿 API。
+3. **LIFF 編輯器**：`apps/liff-editor/app/page.tsx` 改為實際的貼文 UI，包含 Meta/LINE 授權卡片、草稿輸入、即時預覽、草稿列表與「自動生成草稿」按鈕。
+
+### 待辦 / 風險
+- `DATABASE_URL` 尚未提供，`npx prisma migrate dev --name init` 目前因缺少環境變數而失敗；必須先取得 Supabase/Postgres 連線字串再執行。
+- Render 後端服務尚未確認 `DATABASE_URL` 是否存在；Prisma migration 完成後須同步設置並 Redeploy。
+- **Step 4：OpenAI 草稿生成服務** 尚未啟動，待資料庫 schema 定稿後再開始。
+
+### 下一次開啟時的起點
+1. 取得 Supabase/Postgres `DATABASE_URL` → `cd apps/backend && npx prisma migrate dev --name init`，並依 Supabase 流程套用 schema。
+2. 在 Render `srv-d4ht9qili9vc73ee19d0` 新增相同的 `DATABASE_URL`，確保 `npm ci --include=dev && npm run build` 可連線資料庫。
+3. 啟動 Step 4：在 `apps/backend/src/openai` 實作草稿生成 service，串接 `TasksService.generateDailyDraft`，必要時更新 LIFF UI 顯示 AI 草稿狀態。
+
+## 8. Prisma Migration 策略切換（2025-12-02）
+
+### 背景
+目前 Render Cron Jobs 使用 `prisma db push`（方案 A）來快速同步資料庫 schema。此方法適合初期開發，但不維護 migration 歷史記錄。未來需要切換到 `prisma migrate deploy`（方案 B）以獲得完整的 migration 管理能力。
+
+### 當前狀態（方案 A）
+- **Build Command**: `cd apps/backend && npm ci --include=dev && npm run prisma:generate && npm run prisma:db:push && npm run build`
+- **優點**: 快速、無需 migration 文件
+- **缺點**: 不維護 migration 歷史、無法追蹤 schema 變更
+
+### 目標狀態（方案 B）
+- **Build Command**: `cd apps/backend && npm ci --include=dev && npm run prisma:generate && npm run prisma:migrate && npm run build`
+- **優點**: 完整的 migration 歷史、可追蹤變更、團隊協作友好
+- **缺點**: 需要先建立 migration 文件
+
+### ⚠️ 重要：從方案 A 切換到方案 B 的步驟
+
+**⚠️ 注意：這不是只改 Render 的 Command 就好，您需要做一個「基準化 (Baselining)」的動作。**
+
+#### 切換步驟（未來執行時參考）
+
+1. **在本機 (Local) 執行基準化 migration**
+   ```bash
+   cd apps/backend
+   # 確保 DATABASE_URL 已設定（使用與 Render 相同的資料庫）
+   npx prisma migrate dev --name init_structure
+   ```
+   這會產生 `prisma/migrations/` 資料夾，包含初始 schema 的 migration 文件。
+
+2. **將 migration 文件提交到 Git**
+   ```bash
+   git add apps/backend/prisma/migrations/
+   git commit -m "feat: 建立初始 Prisma migration 基準"
+   git push
+   ```
+
+3. **更新 Render Cron Jobs 的 Build Command**
+   - 進入 Render Dashboard
+   - 找到所有使用方案 A 的 Cron Jobs（`cleanup-images`、`generate-daily-draft`）
+   - 將 Build Command 從：
+     ```
+     cd apps/backend && npm ci --include=dev && npm run prisma:generate && npm run prisma:db:push && npm run build
+     ```
+     改為：
+     ```
+     cd apps/backend && npm ci --include=dev && npm run prisma:generate && npm run prisma:migrate && npm run build
+     ```
+
+4. **驗證部署**
+   - Render 下次部署時，會看到 Migration 檔案
+   - `prisma migrate deploy` 會檢查 migration 狀態，並標記為「已同步」
+   - 確認建置和任務執行都正常
+
+#### 後續維護
+- 每次修改 `prisma/schema.prisma` 後，在本機執行 `npx prisma migrate dev --name <migration_name>`
+- 將產生的 migration 文件提交到 Git
+- Render 部署時會自動執行新的 migration
+
 ---
 
 此 `specify.md` 將作為後續 OpenSpec 工作流程的起點，未來新功能請新增或延伸本文件，並維持與 `CONSTITUTION.md` 所述原則一致。
