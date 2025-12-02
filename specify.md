@@ -8,8 +8,10 @@
 | --- | --- | --- | --- | --- |
 | `apps/liff-editor` | Next.js 16 LIFF 編輯器（前台） | `tucheng-cat-autopost-liff-editor` | Vercel | `main` |
 | `apps/backend` | NestJS API / Webhook 服務（提供資料存取、自動貼文） | `tucheng-cat-autopost-backend`（命名依 Render 控制台為準） | Render Web Service | `main` |
+| `apps/backend` (Cron) | 清理圖片任務 | `cleanup-images` | Render Cron Job | `main` |
+| `apps/backend` (Cron) | 每日草稿生成任務 | `generate-daily-draft` | Render Cron Job | `main` |
 
-- Render 僅部署後端；前端維持在 Vercel。  
+- Render 部署後端 Web Service 和兩個 Cron Jobs；前端維持在 Vercel。  
 - 所有服務皆以 `main` 分支建置；若未來需要 staging，請在表格中新增分支對應。  
 - 任何服務若增加（例如 cron、message relay），都需在本表補上 Deploy target 與功能說明。
 
@@ -130,24 +132,77 @@ Render 服務若要模擬 Vercel 行為（例如部分函式依賴 `process.env.
 ## 6. Lesson Learned（固定區塊）
 
 - **LL-2025-11-24-01**：Vercel 儀表板即使清空欄位，若未關閉 override 或未直接填入指令，仍會 fallback 至 pnpm。作法：在儀表板明確輸入 `npm ci` / `npm run build`，並於 `vercel.json` 中同步記錄。
+- **LL-2025-12-02-01**：Render 建置命令中使用 Prisma schema 路徑時，需注意工作目錄。當命令已執行 `cd apps/backend` 後，應使用相對路徑 `prisma/schema.prisma` 而非 `apps/backend/prisma/schema.prisma`。解決方案：在 `package.json` 中明確指定 schema 路徑，並使用 npm scripts 統一管理。
+- **LL-2025-12-02-02**：Render Cron Jobs 建置失敗時，需確認資料庫表是否存在。使用 `prisma db push` 可快速同步 schema，但未來應切換到 `prisma migrate deploy` 以維護 migration 歷史。切換時需執行基準化 (Baselining) 動作，不能只改 Build Command。
 - 未來任何事件請在此區塊追加 `LL-YYYY-MM-DD-XX` 條目，保持時間序與描述（緣由、處理、預防措施）。
 
-## 7. 進度紀錄（2025-11-24）
+## 7. 進度紀錄
 
-### 已完成
+### 2025-11-24
+
+#### 已完成
 1. **後端模組化**：`MetaModule`（`GET /meta/callback`）、`LineModule`（`POST /line/webhook`）、`TasksModule`（`/tasks/cleanup-images`、`/tasks/generate-daily-draft`）皆串上 Prisma，確保授權/排程事件會被記錄。
 2. **Prisma 資料層**：`prisma/schema.prisma` 建立 `MetaCredential`、`LineCredential`、`PostDraft`、`TaskLog`，`PrismaModule` + Repository 已供 Nest 容器注入；`PostsController` 開放日後給前端使用的草稿 API。
 3. **LIFF 編輯器**：`apps/liff-editor/app/page.tsx` 改為實際的貼文 UI，包含 Meta/LINE 授權卡片、草稿輸入、即時預覽、草稿列表與「自動生成草稿」按鈕。
 
-### 待辦 / 風險
-- `DATABASE_URL` 尚未提供，`npx prisma migrate dev --name init` 目前因缺少環境變數而失敗；必須先取得 Supabase/Postgres 連線字串再執行。
-- Render 後端服務尚未確認 `DATABASE_URL` 是否存在；Prisma migration 完成後須同步設置並 Redeploy。
-- **Step 4：OpenAI 草稿生成服務** 尚未啟動，待資料庫 schema 定稿後再開始。
+### 2025-12-02
 
-### 下一次開啟時的起點
-1. 取得 Supabase/Postgres `DATABASE_URL` → `cd apps/backend && npx prisma migrate dev --name init`，並依 Supabase 流程套用 schema。
-2. 在 Render `srv-d4ht9qili9vc73ee19d0` 新增相同的 `DATABASE_URL`，確保 `npm ci --include=dev && npm run build` 可連線資料庫。
-3. 啟動 Step 4：在 `apps/backend/src/openai` 實作草稿生成 service，串接 `TasksService.generateDailyDraft`，必要時更新 LIFF UI 顯示 AI 草稿狀態。
+#### 已完成
+1. **修復 Render 建置問題**：
+   - 修復 Prisma schema 路徑問題（`package.json` 中明確指定 `--schema=prisma/schema.prisma`）
+   - 更新 `prisma:generate` 腳本，確保建置時能正確找到 schema 文件
+   - 所有 Render workspace（Web Service + 2 個 Cron Jobs）已成功部署 ✅
+
+2. **Render Cron Jobs 實作**：
+   - 創建 `src/scripts/run-task.ts` 任務執行腳本
+   - 添加 `task:cleanup-images` 和 `task:generate-daily-draft` npm 腳本
+   - 支援開發環境（ts-node）和生產環境（node dist）執行
+
+3. **Prisma Migration 支援**：
+   - 添加 `prisma:db:push` 腳本用於快速同步 schema（方案 A）
+   - 添加 `prisma:migrate` 腳本用於正式 migration（方案 B）
+   - 解決資料庫表不存在的問題（使用 `prisma db push`）
+   - 記錄從方案 A 切換到方案 B 的完整步驟
+
+4. **錯誤處理改進**：
+   - 改進 `generateDailyDraft` 任務的錯誤處理和日誌記錄
+   - 添加詳細的錯誤訊息和堆疊追蹤
+
+5. **文件更新**：
+   - 更新架構/部署對應表格，添加 Cron Jobs
+   - 記錄 Prisma migration 策略切換步驟
+   - 更新 Lesson Learned
+
+#### 當前狀態
+- ✅ Render Web Service：部署成功
+- ✅ Render Cron Job `cleanup-images`：部署成功
+- ✅ Render Cron Job `generate-daily-draft`：部署成功
+- ✅ 資料庫 schema：已使用 `prisma db push` 同步（方案 A）
+- ⚠️ Migration 歷史：尚未建立（未來需切換到方案 B）
+
+#### 待辦 / 風險
+- **Step 4：OpenAI 草稿生成服務** 尚未啟動，待資料庫 schema 穩定後再開始。
+- **Migration 基準化**：未來需要從方案 A（`prisma db push`）切換到方案 B（`prisma migrate deploy`）時，需執行基準化 migration（參考第 8 章節）。
+- **任務功能實作**：`cleanup-images` 和 `generate-daily-draft` 目前為基礎實作，需完善實際業務邏輯。
+
+#### 下一次開啟時的起點
+1. **確認 Render 部署狀態**：
+   - 檢查所有 Render workspace 是否正常運行
+   - 驗證 Cron Jobs 是否按排程執行
+   - 檢查資料庫連線和表結構是否正確
+
+2. **完善任務功能**：
+   - 實作 `cleanup-images` 的實際清理邏輯
+   - 實作 `generate-daily-draft` 的草稿生成邏輯（可整合 OpenAI）
+
+3. **Migration 基準化（未來）**：
+   - 當需要切換到方案 B 時，參考第 8 章節執行基準化 migration
+   - 更新 Render Cron Jobs 的 Build Command
+
+4. **啟動 Step 4：OpenAI 草稿生成服務**：
+   - 在 `apps/backend/src/openai` 實作草稿生成 service
+   - 串接 `TasksService.generateDailyDraft`
+   - 更新 LIFF UI 顯示 AI 草稿狀態
 
 ## 8. Prisma Migration 策略切換（2025-12-02）
 
