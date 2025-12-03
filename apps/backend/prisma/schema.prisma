@@ -87,4 +87,47 @@ model TaskLog {
   @@index([taskType, createdAt])
 }
 
+enum AuditLogLevel {
+  INFO
+  WARN
+  ERROR
+  DEBUG
+}
+
+enum AuditLogType {
+  HTTP_REQUEST
+  TASK_EXECUTION
+  API_CALL
+  DATABASE_OPERATION
+  SYSTEM_EVENT
+  ERROR
+}
+
+model AuditLog {
+  id          String         @id @default(uuid())
+  level       AuditLogLevel
+  type        AuditLogType
+  service     String         // 服務名稱，如 'TasksService', 'OpenAIService'
+  action      String         // 操作名稱，如 'generateDailyDraft', 'POST /tasks/generate-daily-draft'
+  message     String         // 主要訊息
+  details     Json?          // 詳細資訊（錯誤堆疊、請求參數等）
+  userId      String?         // 使用者 ID（如果有）
+  requestId   String?         // 請求 ID（用於追蹤同一請求的多個日誌）
+  ipAddress  String?         // IP 位址
+  userAgent  String?         // User Agent
+  statusCode  Int?           // HTTP 狀態碼
+  duration    Int?           // 執行時間（毫秒）
+  error       Json?          // 錯誤資訊（如果是錯誤日誌）
+  metadata    Json?          // 其他元資料
+  createdAt   DateTime       @default(now())
+
+  @@index([level, createdAt])
+  @@index([type, createdAt])
+  @@index([service, createdAt])
+  @@index([action, createdAt])
+  @@index([requestId])
+  @@index([createdAt])
+}
+
+
 
