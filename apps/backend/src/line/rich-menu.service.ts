@@ -225,7 +225,7 @@ export class RichMenuService {
           },
           action: {
             type: 'uri',
-            uri: process.env.LIFF_EDITOR_URL || 'https://liff.line.me/your-liff-id',
+            uri: process.env.LIFF_URL || process.env.LIFF_EDITOR_URL || 'https://liff.line.me/your-liff-id',
             label: '編輯器',
           },
         },

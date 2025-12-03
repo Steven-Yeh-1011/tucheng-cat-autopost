@@ -26,11 +26,16 @@ npm install puppeteer @line/bot-sdk dotenv
 # LINE Channel Access Token（必需）
 LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token_here
 
-# LIFF Base URL（可選，用於設定按鈕的 URI）
+# LIFF URL（推薦，完整的 LIFF URL，例如：https://liff.line.me/2008612222-PgzW5BGy）
+LIFF_URL=https://liff.line.me/2008612222-PgzW5BGy
+
+# 或使用 LIFF Base URL（可選，用於設定按鈕的 URI，例如：https://your-liff-app.vercel.app）
 LIFF_BASE_URL=https://your-liff-app.vercel.app
 # 或
 VERCEL_PROJECT_PRODUCTION_URL=https://your-liff-app.vercel.app
 ```
+
+**注意**：`LIFF_URL` 是完整的 LINE LIFF URL（例如：`https://liff.line.me/2008612222-PgzW5BGy`），而 `LIFF_BASE_URL` 是您的 Vercel 部署網址。如果設定了 `LIFF_URL`，系統會優先使用它。
 
 ## 使用方法
 

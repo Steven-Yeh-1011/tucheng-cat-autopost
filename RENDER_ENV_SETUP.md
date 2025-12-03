@@ -18,6 +18,12 @@
 - `DATABASE_URL` - PostgreSQL 連線字串（必要）
 - `GEMINI_API_KEY` 或 `GOOGLE_AI_API_KEY` - Google AI Studio API 金鑰（用於前端觸發草稿生成）
 
+**LINE 相關環境變數：**
+- `LIFF_URL` - 完整的 LINE LIFF URL（例如：`https://liff.line.me/2008612222-PgzW5BGy`）
+  - 用於 Rich Menu 按鈕的 URI 設定
+  - 如果未設定，系統會使用 `LIFF_BASE_URL` 或 `VERCEL_PROJECT_PRODUCTION_URL` 作為後備
+- `LINE_CHANNEL_ACCESS_TOKEN` - LINE Channel Access Token（用於 Rich Menu 部署腳本）
+
 **Vercel 模擬變數（參考 specify.md）：**
 - `VERCEL` = `1`
 - `VERCEL_ENV` = `production`
@@ -31,6 +37,7 @@
 
 **其他可能需要的變數：**
 - `PORT` - 服務端口（Render 通常自動設定）
+- `LIFF_BASE_URL` - LIFF 應用的基礎 URL（如果未設定 `LIFF_URL`，可作為後備）
 - Meta/LINE 相關的認證變數（如果已實作）
 
 ---

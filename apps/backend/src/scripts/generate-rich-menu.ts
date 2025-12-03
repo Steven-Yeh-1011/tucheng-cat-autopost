@@ -191,18 +191,33 @@ async function generateImage(): Promise<string> {
 }
 
 // 建立 Rich Menu 並部署
-async function deployRichMenu(imagePath: string, channelAccessToken: string, liffBaseUrl?: string): Promise<void> {
+async function deployRichMenu(imagePath: string, channelAccessToken: string, liffUrl?: string): Promise<void> {
   console.log('🚀 開始部署 Rich Menu 到 LINE...');
   
   const client = new Client({
     channelAccessToken,
   });
   
+  // 取得 LIFF URL（優先使用 LIFF_URL，否則使用傳入的參數）
+  const baseLiffUrl = process.env.LIFF_URL || liffUrl || '';
+  
   // 計算按鈕區域
   const areas = BUTTON_CONFIG.map((btn, index) => {
     const bounds = calculateButtonBounds(index);
-    const baseUrl = liffBaseUrl || '';
-    const uri = btn.uri.startsWith('http') ? btn.uri : `${baseUrl}${btn.uri}`;
+    
+    // 如果按鈕 URI 是相對路徑，且提供了 LIFF URL，則組合完整 URL
+    // 如果按鈕 URI 已經是完整 URL，則直接使用
+    let uri = btn.uri;
+    if (!uri.startsWith('http') && baseLiffUrl) {
+      // 如果是相對路徑，組合 LIFF URL + 路徑
+      // 例如：LIFF_URL=https://liff.line.me/2008612222-PgzW5BGy，uri=/editor
+      // 結果：https://liff.line.me/2008612222-PgzW5BGy/editor
+      const cleanUri = uri.startsWith('/') ? uri : `/${uri}`;
+      uri = `${baseLiffUrl}${cleanUri}`;
+    } else if (!uri.startsWith('http') && !baseLiffUrl) {
+      // 如果沒有提供 LIFF URL，保持相對路徑（前端會處理）
+      uri = btn.uri;
+    }
     
     return {
       bounds: {
@@ -259,11 +274,18 @@ async function deployRichMenu(imagePath: string, channelAccessToken: string, lif
 // 主函數
 async function main() {
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-  const liffBaseUrl = process.env.LIFF_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  // 優先使用 LIFF_URL，如果沒有則使用 LIFF_BASE_URL 或 VERCEL_PROJECT_PRODUCTION_URL（作為後備）
+  const liffUrl = process.env.LIFF_URL || process.env.LIFF_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
   
   if (!channelAccessToken) {
     console.error('❌ 錯誤：請設定 LINE_CHANNEL_ACCESS_TOKEN 環境變數');
     process.exit(1);
+  }
+  
+  if (!liffUrl) {
+    console.warn('⚠️  警告：未設定 LIFF_URL 環境變數，Rich Menu 按鈕將使用相對路徑');
+  } else {
+    console.log(`📱 使用 LIFF URL: ${liffUrl}`);
   }
   
   try {
@@ -271,7 +293,7 @@ async function main() {
     const imagePath = await generateImage();
     
     // 第二步：部署到 LINE
-    await deployRichMenu(imagePath, channelAccessToken, liffBaseUrl);
+    await deployRichMenu(imagePath, channelAccessToken, liffUrl);
     
     console.log('\n✨ 所有步驟完成！');
   } catch (error) {

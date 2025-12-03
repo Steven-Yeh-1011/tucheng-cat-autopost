@@ -42,9 +42,10 @@ export class RichMenuConfigController {
   getRichMenuConfig(@Query('channelId') channelId?: string): RichMenuConfig {
     // 使用相對路徑，前端會自動處理
     // 如果需要絕對路徑，可以從環境變數取得
+    // 優先使用 LIFF_URL，如果沒有則使用 LIFF_BASE_URL 或 VERCEL_PROJECT_PRODUCTION_URL
     const useAbsoluteUrl = process.env.LIFF_USE_ABSOLUTE_URL === 'true';
     const baseUrl = useAbsoluteUrl 
-      ? (process.env.LIFF_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || '')
+      ? (process.env.LIFF_URL || process.env.LIFF_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || '')
       : '';
     
     return {
