@@ -47,13 +47,14 @@ export default function LiffEditorPage() {
 
   const backendUnavailable = useMemo(() => !backendBaseUrl, []);
 
-  // 檢測是否在 LINE 環境中，如果是則自動重定向到 Dashboard
+  // 備用重定向邏輯（如果 middleware 沒有觸發）
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
     // 檢查是否在 LINE 環境中（通過 user agent 或 URL 參數）
     const isInLine = 
       window.navigator.userAgent.includes('Line') ||
+      window.navigator.userAgent.includes('LINE') ||
       window.location.search.includes('liff.state') ||
       window.location.href.includes('liff.line.me') ||
       window.location.href.includes('line.me');
@@ -70,7 +71,8 @@ export default function LiffEditorPage() {
       currentPath.startsWith('/about') ||
       currentPath.startsWith('/contact');
     
-    if (isInLine && !showEditor && !isDashboardOrSpecificPage) {
+    // 如果在 LINE 環境中且訪問首頁，重定向到 Dashboard
+    if (isInLine && currentPath === '/' && !showEditor) {
       router.replace('/dashboard');
     }
   }, [router]);
