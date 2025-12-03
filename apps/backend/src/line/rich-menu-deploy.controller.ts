@@ -101,7 +101,7 @@ export class RichMenuDeployController {
         channelId,
         richMenuCount: richMenus.length,
         richMenus: richMenus.map(rm => ({
-          richMenuId: rm.richMenuId,
+          richMenuId: (rm as any).richMenuId || 'unknown',
           name: rm.name,
           size: rm.size,
         })),
