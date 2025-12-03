@@ -11,6 +11,7 @@ export class RichMenuService {
 
   /**
    * 取得 LINE Client（根據 channelId）
+   * 優先從環境變數讀取，如果沒有則從資料庫讀取
    */
   private async getClient(channelId: string): Promise<Client | null> {
     // 如果已經有快取的 client，直接返回
@@ -19,23 +20,35 @@ export class RichMenuService {
       if (cached) return cached;
     }
 
-    // 從資料庫取得憑證
-    const credential = await this.lineRepository.findByChannelId(channelId);
-    if (!credential || !credential.accessToken) {
-      this.logger.warn(`No access token found for channel: ${channelId}`);
-      return null;
+    let channelAccessToken: string | null = null;
+
+    // 優先從環境變數讀取（方便快速部署）
+    if (process.env.LINE_CHANNEL_ACCESS_TOKEN) {
+      channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+      this.logger.log(`Using LINE_CHANNEL_ACCESS_TOKEN from environment variable`);
+    } else {
+      // 從資料庫取得憑證
+      const credential = await this.lineRepository.findByChannelId(channelId);
+      if (credential && credential.accessToken) {
+        // 檢查 token 是否過期
+        if (credential.accessTokenExpiry && credential.accessTokenExpiry < new Date()) {
+          this.logger.warn(`Access token expired for channel: ${channelId}`);
+          // TODO: 實作 token 刷新邏輯
+          return null;
+        }
+        channelAccessToken = credential.accessToken;
+        this.logger.log(`Using access token from database for channel: ${channelId}`);
+      }
     }
 
-    // 檢查 token 是否過期
-    if (credential.accessTokenExpiry && credential.accessTokenExpiry < new Date()) {
-      this.logger.warn(`Access token expired for channel: ${channelId}`);
-      // TODO: 實作 token 刷新邏輯
+    if (!channelAccessToken) {
+      this.logger.warn(`No access token found for channel: ${channelId}. Please set LINE_CHANNEL_ACCESS_TOKEN environment variable or store credentials in database.`);
       return null;
     }
 
     // 建立新的 client
     const config: ClientConfig = {
-      channelAccessToken: credential.accessToken,
+      channelAccessToken,
     };
 
     const client = new Client(config);
@@ -225,7 +238,14 @@ export class RichMenuService {
           },
           action: {
             type: 'uri',
-            uri: process.env.LIFF_URL || process.env.LIFF_EDITOR_URL || 'https://liff.line.me/your-liff-id',
+            uri: (() => {
+              const liffUrl = process.env.LIFF_URL || process.env.LIFF_EDITOR_URL;
+              if (liffUrl) {
+                // 如果 LIFF_URL 是完整的 URL，直接使用；否則組合路徑
+                return liffUrl.includes('/editor') ? liffUrl : `${liffUrl}/editor`;
+              }
+              return 'https://liff.line.me/your-liff-id';
+            })(),
             label: '編輯器',
           },
         },
