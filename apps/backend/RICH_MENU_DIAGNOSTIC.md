@@ -36,10 +36,24 @@ curl -X GET \
 
 **Windows (PowerShell):**
 ```powershell
+# ⚠️ 重要：將 YOUR_CHANNEL_ACCESS_TOKEN 替換為實際的 Token
 Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" `
   -Method Get `
   -Headers @{ "Authorization" = "Bearer YOUR_CHANNEL_ACCESS_TOKEN" }
+
+# 範例（使用實際 Token）：
+# Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" `
+#   -Method Get `
+#   -Headers @{ "Authorization" = "Bearer abc123xyz..." }
 ```
+
+**如何取得 Token：**
+1. 前往 [LINE Developers Console](https://developers.line.biz/console/)
+2. 選擇您的 Provider 和 Channel
+3. 進入 **Messaging API** 頁籤
+4. 找到 **Channel access token** 區塊
+5. 點擊 **Issue** 生成長期 Token（Long-lived token）
+6. 複製 Token（格式類似：`abc123xyz...`）
 
 **使用診斷腳本（推薦）:**
 
