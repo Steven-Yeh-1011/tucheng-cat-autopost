@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import PageHeader from '../components/PageHeader';
 
 type RichMenuButton = {
   id: string;
@@ -37,6 +39,7 @@ type RichMenuConfig = {
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
 
 export default function RichMenuPage() {
+  const router = useRouter();
   const [config, setConfig] = useState<RichMenuConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,14 +51,23 @@ export default function RichMenuPage() {
   const fetchRichMenuConfig = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      if (!backendBaseUrl) {
+        throw new Error('後端服務未設定，請檢查 NEXT_PUBLIC_BACKEND_URL 環境變數');
+      }
+      
       const response = await fetch(`${backendBaseUrl}/line/rich-menu-config`);
       if (!response.ok) {
-        throw new Error('Failed to fetch rich menu config');
+        const errorText = await response.text();
+        throw new Error(`無法載入 Rich Menu 配置：${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
       }
       const data = await response.json();
       setConfig(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMessage = err instanceof Error ? err.message : '未知錯誤';
+      console.error('Failed to fetch rich menu config:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -63,9 +75,9 @@ export default function RichMenuPage() {
 
   const handleButtonClick = (button: RichMenuButton) => {
     if (button.action.type === 'uri' && button.action.uri) {
-      // 如果是相對路徑，使用 Next.js router
+      // 如果是相對路徑，使用 Next.js router 進行客戶端路由
       if (button.action.uri.startsWith('/')) {
-        window.location.href = button.action.uri;
+        router.push(button.action.uri);
       } else {
         // 外部 URL
         window.open(button.action.uri, '_blank');
@@ -93,15 +105,33 @@ export default function RichMenuPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 text-red-600">錯誤：{error}</div>
-          <button
-            onClick={fetchRichMenuConfig}
-            className="rounded bg-indigo-600 px-4 py-2 text-white"
-          >
-            重試
-          </button>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+        <div className="max-w-md rounded-2xl bg-white p-6 shadow-lg text-center">
+          <div className="mb-4 text-4xl">⚠️</div>
+          <h2 className="mb-2 text-xl font-bold text-slate-900">無法載入 Rich Menu</h2>
+          <div className="mb-6 text-sm text-red-600">{error}</div>
+          <div className="mb-4 space-y-2 text-left text-xs text-slate-500">
+            <p>請檢查：</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>後端服務是否正常運行</li>
+              <li>環境變數 NEXT_PUBLIC_BACKEND_URL 是否正確設定</li>
+              <li>網路連線是否正常</li>
+            </ul>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              返回主選單
+            </button>
+            <button
+              onClick={fetchRichMenuConfig}
+              className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              重試
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -120,9 +150,7 @@ export default function RichMenuPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="mx-auto max-w-md px-4 py-8">
-        <header className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">{config.name}</h1>
-        </header>
+        <PageHeader title={config.name} />
 
         <div
           className="relative mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl"

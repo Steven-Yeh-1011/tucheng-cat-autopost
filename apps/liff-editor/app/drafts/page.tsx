@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import PageHeader from '../components/PageHeader';
 
 type Draft = {
   id: string;
@@ -48,7 +49,7 @@ export default function DraftsPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-3xl font-bold">草稿列表</h1>
+        <PageHeader title="草稿列表" />
         {drafts.length === 0 ? (
           <p className="text-slate-600">目前沒有草稿</p>
         ) : (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import PageHeader from '../components/PageHeader';
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
 
@@ -34,7 +35,7 @@ export default function GeneratePage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-3xl font-bold">生成草稿</h1>
+        <PageHeader title="AI 生成草稿" />
         <div className="rounded-lg bg-white p-6 shadow-sm">
           <p className="mb-4 text-slate-600">
             點擊下方按鈕，系統將使用 AI 自動生成今日的貼文草稿。

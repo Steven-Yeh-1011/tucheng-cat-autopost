@@ -113,8 +113,8 @@ export class RichMenuConfigController {
           },
         },
         {
-          id: 'facebook',
-          label: 'Facebook',
+          id: 'dashboard',
+          label: '主選單',
           position: {
             x: 0,
             y: 843,
@@ -123,12 +123,12 @@ export class RichMenuConfigController {
           },
           action: {
             type: 'uri',
-            uri: 'https://www.facebook.com/your-page', // 替換為實際的 Facebook 頁面
+            uri: baseUrl ? `${baseUrl}/dashboard` : '/dashboard',
           },
           style: {
             backgroundColor: '#1877F2',
             textColor: '#FFFFFF',
-            icon: '📘',
+            icon: '🏠',
           },
         },
         {

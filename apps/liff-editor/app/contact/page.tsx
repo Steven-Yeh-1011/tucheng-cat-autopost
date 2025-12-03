@@ -1,10 +1,12 @@
 'use client';
 
+import PageHeader from '../components/PageHeader';
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-3xl font-bold">聯絡我們</h1>
+        <PageHeader title="聯絡我們" />
         <div className="space-y-4 rounded-lg bg-white p-6 shadow-sm">
           <div>
             <h3 className="mb-2 font-semibold">Facebook</h3>

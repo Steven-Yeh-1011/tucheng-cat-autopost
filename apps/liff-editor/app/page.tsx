@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Draft = {
   id: string;
@@ -36,6 +37,7 @@ const emptyDraft = {
 };
 
 export default function LiffEditorPage() {
+  const router = useRouter();
   const [form, setForm] = useState(emptyDraft);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,34 @@ export default function LiffEditorPage() {
   const [lineStatus, setLineStatus] = useState("尚未連線");
 
   const backendUnavailable = useMemo(() => !backendBaseUrl, []);
+
+  // 檢測是否在 LINE 環境中，如果是則自動重定向到 Dashboard
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // 檢查是否在 LINE 環境中（通過 user agent 或 URL 參數）
+    const isInLine = 
+      window.navigator.userAgent.includes('Line') ||
+      window.location.search.includes('liff.state') ||
+      window.location.href.includes('liff.line.me') ||
+      window.location.href.includes('line.me');
+    
+    // 如果 URL 中沒有明確指定要顯示編輯器，且在 LINE 環境中，則重定向到 Dashboard
+    const showEditor = new URLSearchParams(window.location.search).get('page') === 'editor';
+    const currentPath = window.location.pathname;
+    const isDashboardOrSpecificPage = 
+      currentPath === '/dashboard' || 
+      currentPath.startsWith('/editor') ||
+      currentPath.startsWith('/drafts') ||
+      currentPath.startsWith('/generate') ||
+      currentPath.startsWith('/rich-menu') ||
+      currentPath.startsWith('/about') ||
+      currentPath.startsWith('/contact');
+    
+    if (isInLine && !showEditor && !isDashboardOrSpecificPage) {
+      router.replace('/dashboard');
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!backendUnavailable) {

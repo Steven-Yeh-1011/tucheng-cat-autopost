@@ -1,0 +1,47 @@
+[33mcommit c2658cfaadc46ba1cceb988e4b733320c635d9ab[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Steven Yeh <diowyang1011@gmail.com>
+Date:   Wed Dec 3 10:28:53 2025 +0800
+
+    feat: 實作審計日誌系統、Google AI 草稿生成、LINE Rich Menu (CSS版本)
+
+ .gitignore                                         |  66 [32m+++[m
+ AUDIT_LOG_GUIDE.md                                 | 300 [32m+++++++++++++[m
+ CONSTITUTION.md                                    |   4 [32m+[m[31m-[m
+ LIFF_RICH_MENU_GUIDE.md                            | 250 [32m+++++++++++[m
+ LINE_RICH_MENU_GUIDE.md                            | 299 [32m+++++++++++++[m
+ RENDER_ENV_SETUP.md                                | 130 [32m++++++[m
+ SECURITY_AUDIT.md                                  | 185 [32m++++++++[m
+ SECURITY_FIX_SUMMARY.md                            | 137 [32m++++++[m
+ apps/backend/package-lock.json                     | 146 [32m++++++[m[31m-[m
+ apps/backend/package.json                          |  12 [32m+[m[31m-[m
+ apps/backend/prisma/schema.prisma                  |  43 [32m++[m
+ apps/backend/src/app.module.ts                     |  18 [32m+[m[31m-[m
+ apps/backend/src/audit/audit-log.controller.ts     |  82 [32m++++[m
+ apps/backend/src/audit/audit-log.module.ts         |  14 [32m+[m
+ apps/backend/src/audit/audit-log.repository.ts     | 108 [32m+++++[m
+ apps/backend/src/audit/audit-log.service.ts        | 270 [32m++++++++++++[m
+ apps/backend/src/audit/http-exception.filter.ts    |  84 [32m++++[m
+ apps/backend/src/audit/http-logging.interceptor.ts | 126 [32m++++++[m
+ apps/backend/src/line/line.controller.ts           |   1 [32m+[m
+ apps/backend/src/line/line.module.ts               |   9 [32m+[m[31m-[m
+ .../src/line/rich-menu-config.controller.ts        | 176 [32m++++++++[m
+ apps/backend/src/line/rich-menu.controller.ts      | 165 [32m+++++++[m
+ apps/backend/src/line/rich-menu.service.ts         | 303 [32m+++++++++++++[m
+ apps/backend/src/meta/meta.controller.ts           |   1 [32m+[m
+ apps/backend/src/openai/openai.module.ts           |   9 [32m+[m
+ apps/backend/src/openai/openai.service.ts          | 103 [32m+++++[m
+ apps/backend/src/posts/dto/create-draft.dto.ts     |   1 [32m+[m
+ .../src/posts/dto/update-draft-status.dto.ts       |   1 [32m+[m
+ apps/backend/src/prisma/prisma.module.ts           |   1 [32m+[m
+ apps/backend/src/scripts/run-task.ts               |   1 [32m+[m
+ apps/backend/src/tasks/tasks.controller.ts         |   1 [32m+[m
+ apps/backend/src/tasks/tasks.module.ts             |   6 [32m+[m[31m-[m
+ apps/backend/src/tasks/tasks.service.ts            | 104 [32m++++[m[31m-[m
+ apps/liff-editor/app/about/page.tsx                |  20 [32m+[m
+ apps/liff-editor/app/contact/page.tsx              |  29 [32m++[m
+ apps/liff-editor/app/drafts/page.tsx               |  83 [32m++++[m
+ apps/liff-editor/app/editor/page.tsx               |  14 [32m+[m
+ apps/liff-editor/app/generate/page.tsx             |  57 [32m+++[m
+ apps/liff-editor/app/page.tsx                      | 478 [32m++++++++++++++++++[m[31m---[m
+ apps/liff-editor/app/rich-menu/page.tsx            | 171 [32m++++++++[m
+ 40 files changed, 3913 insertions(+), 95 deletions(-)
