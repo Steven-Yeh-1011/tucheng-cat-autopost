@@ -169,14 +169,12 @@ async function generateImage(): Promise<string> {
     await page.setContent(html, { waitUntil: 'networkidle0' });
     
     // 等待渲染完成
-    await page.waitForTimeout(500);
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // 截圖
     const outputPath = path.join(process.cwd(), 'rich-menu-dashboard.png');
     await page.screenshot({
       path: outputPath,
-      width: RICH_MENU_WIDTH,
-      height: RICH_MENU_HEIGHT,
       clip: {
         x: 0,
         y: 0,
