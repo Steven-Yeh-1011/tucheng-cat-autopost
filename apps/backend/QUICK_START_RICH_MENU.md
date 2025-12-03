@@ -49,12 +49,35 @@
 
 在 PowerShell 中執行（**記得替換實際的 Token**）：
 
+### 方法 1：單行命令（推薦，避免多行問題）
+
 ```powershell
 # 將 YOUR_ACTUAL_TOKEN 替換為您剛才複製的實際 Token
+$token = "YOUR_ACTUAL_TOKEN"; Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" -Method Get -Headers @{ "Authorization" = "Bearer $token" }
+```
+
+### 方法 2：分步執行
+
+```powershell
+# 步驟 1：設定 Token
 $token = "YOUR_ACTUAL_TOKEN"
-Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" `
-  -Method Get `
-  -Headers @{ "Authorization" = "Bearer $token" }
+
+# 步驟 2：測試 Token（單行）
+Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" -Method Get -Headers @{ "Authorization" = "Bearer $token" }
+```
+
+### 方法 3：如果遇到 PowerShell 錯誤
+
+如果 PowerShell 出現語法錯誤，請：
+1. **清除終端**：輸入 `Clear-Host` 或按 `Ctrl+L`
+2. **重新開啟 PowerShell**：關閉並重新開啟終端
+3. **使用單行命令**：避免使用反引號 ` 進行多行輸入
+
+### 實際範例（使用您的 Token）
+
+```powershell
+$token = "TQbc8YYzVEFkX6WK3dVPNlo69Z0y4Gg39QBD5EV6/bMs+zM4HLODqyY0v+5idHysUy5tIx6Hgbq28S28qgN2PzPtxOpnstcKgWZZnxLKov9th2PKJDg7ZA4OGKcP//4RcRKoEz8Dt/8j462uXcoRkAdB04t89/1O/w1cDnyilFU="
+Invoke-RestMethod -Uri "https://api.line.me/v2/bot/info" -Method Get -Headers @{ "Authorization" = "Bearer $token" }
 ```
 
 **成功範例回應：**
