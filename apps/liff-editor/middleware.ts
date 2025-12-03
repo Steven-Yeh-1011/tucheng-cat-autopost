@@ -25,17 +25,28 @@ export function middleware(request: NextRequest) {
   const isInLine = 
     userAgent.includes('Line') ||
     userAgent.includes('LINE') ||
+    userAgent.toLowerCase().includes('line') ||
     referer.includes('liff.line.me') ||
     referer.includes('line.me') ||
     url.includes('liff.line.me') ||
     url.includes('line.me') ||
     request.nextUrl.searchParams.has('liff.state');
   
+  // 調試日誌（僅在開發環境）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Middleware] Pathname:', pathname);
+    console.log('[Middleware] User Agent:', userAgent);
+    console.log('[Middleware] Is in LINE:', isInLine);
+  }
+  
   // 如果在 LINE 環境中且訪問首頁，重定向到 Dashboard
   if (isInLine && pathname === '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard';
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Middleware] Redirecting to:', redirectUrl.toString());
+    }
+    return NextResponse.redirect(redirectUrl);
   }
   
   return NextResponse.next();

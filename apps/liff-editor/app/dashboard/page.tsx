@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 type DashboardItem = {
@@ -71,6 +72,21 @@ const dashboardItems: DashboardItem[] = [
 
 export default function DashboardPage() {
   const router = useRouter();
+
+  // 調試信息
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('=== Dashboard Debug Info ===');
+      console.log('User Agent:', navigator.userAgent);
+      console.log('Current URL:', window.location.href);
+      console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+      console.log('Is in LINE:', 
+        navigator.userAgent.includes('Line') || 
+        navigator.userAgent.includes('LINE') ||
+        window.location.href.includes('liff.line.me')
+      );
+    }
+  }, []);
 
   const handleCardClick = (route: string) => {
     router.push(route);
