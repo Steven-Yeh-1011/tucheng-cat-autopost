@@ -32,21 +32,20 @@ export function middleware(request: NextRequest) {
     url.includes('line.me') ||
     request.nextUrl.searchParams.has('liff.state');
   
-  // 調試日誌（僅在開發環境）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Middleware] Pathname:', pathname);
-    console.log('[Middleware] User Agent:', userAgent);
-    console.log('[Middleware] Is in LINE:', isInLine);
-  }
+  // 調試日誌（生產環境也記錄，方便排查）
+  console.log('[Middleware] Pathname:', pathname);
+  console.log('[Middleware] User Agent:', userAgent.substring(0, 100)); // 只記錄前100個字符
+  console.log('[Middleware] Referer:', referer);
+  console.log('[Middleware] URL:', url.substring(0, 200)); // 只記錄前200個字符
+  console.log('[Middleware] Is in LINE:', isInLine);
   
   // 如果在 LINE 環境中且訪問首頁，重定向到 Dashboard
   if (isInLine && pathname === '/') {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard';
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Middleware] Redirecting to:', redirectUrl.toString());
-    }
-    return NextResponse.redirect(redirectUrl);
+    console.log('[Middleware] Redirecting to:', redirectUrl.toString());
+    // 使用 307 重定向（臨時重定向，保留方法）
+    return NextResponse.redirect(redirectUrl, 307);
   }
   
   return NextResponse.next();

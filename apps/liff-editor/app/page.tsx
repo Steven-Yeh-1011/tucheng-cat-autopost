@@ -44,38 +44,54 @@ export default function LiffEditorPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [metaStatus, setMetaStatus] = useState("尚未連線");
   const [lineStatus, setLineStatus] = useState("尚未連線");
+  const [redirecting, setRedirecting] = useState(false);
 
   const backendUnavailable = useMemo(() => !backendBaseUrl, []);
 
-  // 備用重定向邏輯（如果 middleware 沒有觸發）
+  // 強制重定向邏輯 - 優先執行
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // 檢查是否在 LINE 環境中（通過 user agent 或 URL 參數）
-    const isInLine = 
-      window.navigator.userAgent.includes('Line') ||
-      window.navigator.userAgent.includes('LINE') ||
-      window.location.search.includes('liff.state') ||
-      window.location.href.includes('liff.line.me') ||
-      window.location.href.includes('line.me');
-    
-    // 如果 URL 中沒有明確指定要顯示編輯器，且在 LINE 環境中，則重定向到 Dashboard
-    const showEditor = new URLSearchParams(window.location.search).get('page') === 'editor';
     const currentPath = window.location.pathname;
-    const isDashboardOrSpecificPage = 
+    
+    // 如果已經在特定頁面，不需要重定向
+    if (
       currentPath === '/dashboard' || 
       currentPath.startsWith('/editor') ||
       currentPath.startsWith('/drafts') ||
       currentPath.startsWith('/generate') ||
       currentPath.startsWith('/rich-menu') ||
       currentPath.startsWith('/about') ||
-      currentPath.startsWith('/contact');
-    
-    // 如果在 LINE 環境中且訪問首頁，重定向到 Dashboard
-    if (isInLine && currentPath === '/' && !showEditor) {
-      router.replace('/dashboard');
+      currentPath.startsWith('/contact')
+    ) {
+      return;
     }
-  }, [router]);
+    
+    // 檢查是否在 LINE 環境中（多種檢測方式）
+    const userAgent = window.navigator.userAgent || '';
+    const href = window.location.href || '';
+    const search = window.location.search || '';
+    
+    const isInLine = 
+      userAgent.includes('Line') ||
+      userAgent.includes('LINE') ||
+      userAgent.toLowerCase().includes('line') ||
+      search.includes('liff.state') ||
+      href.includes('liff.line.me') ||
+      href.includes('line.me');
+    
+    // 如果 URL 中明確指定要顯示編輯器，則不重定向
+    const showEditor = new URLSearchParams(search).get('page') === 'editor';
+    
+    // 如果在 LINE 環境中且訪問首頁，立即重定向到 Dashboard
+    if (isInLine && currentPath === '/' && !showEditor) {
+      console.log('[Client Redirect] Detected LINE environment, redirecting to Dashboard');
+      setRedirecting(true);
+      // 使用 window.location 進行強制重定向，確保立即執行
+      window.location.href = '/dashboard';
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     if (!backendUnavailable) {
@@ -168,6 +184,18 @@ export default function LiffEditorPage() {
       setLineStatus("已送出授權，等待 LINE 回傳授權碼");
     }
   };
+
+  // 如果正在重定向，顯示載入畫面
+  if (redirecting) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="mb-4 text-2xl">載入中...</div>
+          <p className="text-sm text-slate-600">正在導向 Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900">
