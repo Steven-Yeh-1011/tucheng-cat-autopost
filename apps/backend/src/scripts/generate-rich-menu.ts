@@ -4,8 +4,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import dotenv from 'dotenv';
 
-// 載入環境變數
-dotenv.config();
+// 載入環境變數（從專案根目錄）
+// 專案根目錄位於 apps/backend 的上兩層
+const projectRoot = path.resolve(__dirname, '../../..');
+dotenv.config({ path: path.join(projectRoot, '.env') });
 
 // Rich Menu 尺寸（LINE 官方規格）
 const RICH_MENU_WIDTH = 2500;

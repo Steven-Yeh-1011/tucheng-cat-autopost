@@ -14,10 +14,22 @@ import { AppModule } from '../app.module';
 import { TasksService } from '../tasks/tasks.service';
 
 async function runTask(taskName: string) {
-  const app = await NestFactory.createApplicationContext(AppModule);
-  const tasksService = app.get(TasksService);
+  let app;
+  try {
+    app = await NestFactory.createApplicationContext(AppModule);
+  } catch (error) {
+    console.error('❌ 無法建立應用程式上下文:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('錯誤訊息:', errorMessage);
+    if (errorStack) {
+      console.error('錯誤堆疊:', errorStack);
+    }
+    process.exit(1);
+  }
 
   try {
+    const tasksService = app.get(TasksService);
     let result;
     switch (taskName) {
       case 'cleanup-images':
@@ -29,6 +41,7 @@ async function runTask(taskName: string) {
       default:
         console.error(`❌ 未知的任務名稱: ${taskName}`);
         console.error('可用的任務: cleanup-images, generate-daily-draft');
+        await app.close();
         process.exit(1);
     }
 
@@ -37,7 +50,17 @@ async function runTask(taskName: string) {
     process.exit(0);
   } catch (error) {
     console.error(`❌ 任務執行失敗: ${taskName}`, error);
-    await app.close();
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('錯誤訊息:', errorMessage);
+    if (errorStack) {
+      console.error('錯誤堆疊:', errorStack);
+    }
+    if (app) {
+      await app.close().catch(() => {
+        // 忽略關閉時的錯誤
+      });
+    }
     process.exit(1);
   }
 }

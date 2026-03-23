@@ -74,13 +74,23 @@ export class TasksService {
 
       // 使用 Google AI 生成草稿內容
       this.logger.log('Generating draft content with Google AI...');
-      const aiStartTime = Date.now();
-      const content = await this.openAIService.generateDraftContent({
-        topic: '土城浪貓',
-        tone: '溫暖、友善',
-        length: 'medium',
-      });
-      const aiDuration = Date.now() - aiStartTime;
+      let content: string;
+      let aiDuration = 0;
+      
+      try {
+        const aiStartTime = Date.now();
+        content = await this.openAIService.generateDraftContent({
+          topic: '土城浪貓',
+          tone: '溫暖、友善',
+          length: 'medium',
+        });
+        aiDuration = Date.now() - aiStartTime;
+      } catch (aiError) {
+        // 如果 AI 生成失敗，使用 placeholder
+        this.logger.warn(`Google AI generation failed, using placeholder: ${aiError instanceof Error ? aiError.message : String(aiError)}`);
+        content = 'Auto-generated placeholder draft (Google AI generation failed)';
+        aiDuration = 0;
+      }
 
       // 記錄 AI API 呼叫
       await this.auditLogService.logApiCall(
@@ -103,7 +113,7 @@ export class TasksService {
         status: PostStatus.DRAFT,
         metadata: {
           source: 'google-ai',
-          model: 'gemini-1.5-flash',
+          model: 'gemini-pro',
           generatedAt: new Date().toISOString(),
         },
       });

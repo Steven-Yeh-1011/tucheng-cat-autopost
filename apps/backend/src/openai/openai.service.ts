@@ -17,18 +17,17 @@ export class OpenAIService implements OnModuleInit {
     }
 
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // 使用 gemini-1.5-flash：速度快、成本低，適合高頻率的簡單任務
-    // 如需更強的推理能力，可改用 gemini-1.5-pro
-    // 可以在這裡設定 generationConfig，但為了簡化，我們使用預設值
+    // 使用 gemini-pro：穩定且廣泛支援的模型
+    // 注意：gemini-1.5-flash 在 API v1beta 中不可用，因此使用 gemini-pro
     this.model = this.genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
+      model: 'gemini-pro',
       generationConfig: {
         temperature: 0.7,
         // maxOutputTokens 會在需要時動態設定
       },
     });
     
-    this.logger.log('Google AI service initialized with gemini-1.5-flash');
+    this.logger.log('Google AI service initialized with gemini-pro');
   }
 
   /**
